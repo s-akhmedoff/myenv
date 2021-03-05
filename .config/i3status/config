@@ -1,0 +1,63 @@
+general {
+        colors = true
+        interval = 1
+}
+
+#order += "wireless _first_"
+order += "ethernet _first_"
+#order += "battery all"
+order += "disk /"
+order += "volume master"
+order += "load"
+order += "cpu_usage"
+order += "memory"
+order += "tztime local"
+order += "time" 
+
+wireless _first_ {
+        format_up = "WLAN: (%quality @ %essid) %ip"
+        format_down = "WLAN: OFF"
+}
+
+ethernet _first_ {
+        format_up = "LAN: %ip (%speed)"
+        format_down = "LAN: OFF"
+}
+
+battery all {
+        format = "AC: %remaining - %consumption (%status)"
+        low_threshold = 30
+}
+
+disk "/" {
+        format = "HDD: %avail"
+        prefix_type = decimal
+}
+
+volume master {
+	format = "Volume: %volume"
+}
+
+load {
+        format = "LOAD: %1min %5min %15min"
+        max_threshold = "3.0"
+}
+
+cpu_usage {
+        format = "CPU: %usage"
+        max_threshold = 80
+}
+
+memory {
+        format = "RAM: %used of %total"
+        threshold_degraded = "25%"
+        format_degraded = "MEMORY LOW: %free"
+}
+
+tztime local {
+        format = "%A, %B %d, %Y"
+}
+
+time {
+        format = "%H:%M:%S"
+}
