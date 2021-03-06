@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+
+  db:
+    container_name: postgres_db
+    image: postgres:alpine
+    restart: always
+    env_file:
+      - db.env
+    volumes:
+      - db_volume:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+    networks:
+      - default
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    env_file: 
+      - pgadmin.env
+    volumes: 
+      - pgadmin_volume:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks: 
+      - default
+  rmq:
+    container_name: rmq
+    image: rabbitmq:3-management-alpine
+    restart: always
+    env_file: 
+      - rmq.env
+    volumes: 
+      - rmq_volume:/var/lib/rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - default
+
+volumes: 
+  db_volume:
+  pgadmin_volume:
+  rmq_volume:
+
+networks:
+  default:
+    external: 
+      name: dev_env_net

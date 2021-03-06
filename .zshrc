@@ -12,7 +12,6 @@ export ARCHFLAGS="-arch x86_64"
 alias off="poweroff"
 alias mkdir="mkdir -p"
 alias projects="cd $GOPATH/src"
-alias myip="ifconfig -a | grep "inet" | head -n 1 | cut -b 14-26"
 
 # ZSH Configurations
 ZSH_THEME="ys"
@@ -24,7 +23,6 @@ ENABLE_CORRECTION="true"
 HIST_STAMPS="mm/dd/yyyy"
 
 plugins=(
-    autoenv
     common-aliases
     genpass
     git
@@ -37,15 +35,12 @@ plugins=(
 	zsh-completions
 	colorize
     httpie
-    thefuck
     web-search
 )
 
 source $ZSH/oh-my-zsh.sh
 
 # ZSH Plugins Configuration
-AUTOENV_ENV_FILENAME = ".autoexec"
-
 ZSH_WEB_SEARCH_ENGINES=(yandex "https://yandex.uz/search/?text=")
 
 # Other

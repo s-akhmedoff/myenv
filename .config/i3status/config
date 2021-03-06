@@ -15,7 +15,7 @@ order += "tztime local"
 order += "time" 
 
 wireless _first_ {
-        format_up = "WLAN: (%quality @ %essid) %ip"
+        format_up = "WLAN: %ip (%quality )"
         format_down = "WLAN: OFF"
 }
 
@@ -25,7 +25,7 @@ ethernet _first_ {
 }
 
 battery all {
-        format = "AC: %remaining - %consumption (%status)"
+        format = "AC: %percentage - %consumption (%status)"
         low_threshold = 30
 }
 
