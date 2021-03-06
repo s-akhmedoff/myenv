@@ -4,7 +4,7 @@
 ---
 
 ## Arch installing guide also provided
-### GUIDE.md provides small fast flexible guide to install arch linux 
+### [GUIDE.md](https://github.com/s-akhmedoff/myenv/blob/master/GUIDE.md) provides small fast flexible guide to install arch linux 
 
 ---
 ## Overview
