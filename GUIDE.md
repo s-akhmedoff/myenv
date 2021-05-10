@@ -21,7 +21,7 @@
 
 `` 7. reflector --latest 10 --save /ect/pacman.d/mirrorlist``
 
-`` 8. pacstrap /mnt base base-devel linux-firmware linux-zen linux-zen-docs linux-zen-headers e2fsprogs dosfstools dhcpcd vim man-db man-pages tldr reflector zsh grub os-prober mtools efibootmgr curl git``
+`` 8. pacstrap /mnt base base-devel linux-firmware linux-zen linux-zen-docs linux-zen-headers e2fsprogs dosfstools dhcpcd vim man-db man-pages tldr reflector fakeroot zsh grub os-prober mtools efibootmgr curl git``
 
 `` 9. genfstab -U -p /mnt >> /mnt/etc/fstab ``
 
