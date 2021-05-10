@@ -4,17 +4,24 @@
 
 `` 2. timedatectl set-ntp true ``
 
+`` 3. gdisk /dev/sda ``
+
 `` 4. cfdisk /dev/sda``
 
-`` /dev/sda mapping: efi 550MB | swap [RAM]GB | root - available``
+| Part      |            |         |
+| --------- | ---------- | ------- |
+| /dev/sda1 | EFI        | 350 MB  |
+| /dev/sda2 | SWAP       | $RAM GB |
+| /dev/sda3 | Linux Root | ~GB     |
+| /dev/sda4 | Linux Home | ~GB     |
 
-`` 5. mkfs.fat -F32 /dev/sda1 && mkswap /dev/sda2 && mkfs.ext4 /dev/sda3``
+`` 5. mkfs.fat -F32 /dev/sda1 && mkswap /dev/sda2 && mkfs.ext4 /dev/sda3 && mkfs.ext4 /dev/sda4`` 
 
-`` 6. mount /dev/sda3 /mnt && swapon /dev/sda2``
+`` 6. mount /dev/sda3 /mnt && mount /dev/sda4 /mnt/home && swapon /dev/sda2``
 
 `` 7. reflector --latest 10 --save /ect/pacman.d/mirrorlist``
 
-`` 8. pacstrap /mnt base base-devel linux-firmware linux-zen linux-zen-docs linux-zen-headers e2fsprogs dosfstools dhcpcd vim man-db man-pages tldr reflector zsh grub os-prober mtools efibootmgr``
+`` 8. pacstrap /mnt base base-devel linux-firmware linux-zen linux-zen-docs linux-zen-headers e2fsprogs dosfstools dhcpcd vim man-db man-pages tldr reflector zsh grub os-prober mtools efibootmgr curl git``
 
 `` 9. genfstab -U -p /mnt >> /mnt/etc/fstab ``
 
@@ -36,11 +43,17 @@
 
 `` 18. vim /etc/hosts``
 
+```shell
+$ vim /etc/hosts
+127.0.0.1	localhost
+::1		localhost
+```
+
 `` 19. passwd``
 
-`` 20. useradd -m -G wheel -s /bin/zsh sada && passwd sada``
+`` 20. vim /etc/sudoers P.S uncomment %wheel``
 
-`` 21. vim /etc/sudoers P.S uncomment %wheel``
+`` 21. useradd -m -G wheel -s /bin/zsh sada && passwd sada``
 
 `` 22. mkdir /boot/efi && mount /dev/sda1 /boot/efi``
 
@@ -48,9 +61,7 @@
 
 `` 24. grub-mkconfig -o /boot/grub/grub.cfg ``
 
-`` 25. exit && umount -a && reboot``
-
------------------
+`` 25. exit && umount -a && reboot`` 
 
 ## reboot system, log in, check internet connection, set up git configs, git clone by https and run ./install.sh
 

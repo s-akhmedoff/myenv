@@ -1,14 +1,5 @@
 #!/bin/sh
 
-#Latest mirrors
-sudo reflector --latest 10 --save /etc/pacman.d/mirrorlist
-
-# Upgrade system
-sudo pacman -Syu 
-
-# Install default packages
-sudo pacman -S - < resources/pacman.list
-
 # Install oh-my-zsh
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
@@ -17,43 +8,27 @@ git clone https://github.com/zsh-users/zsh-completions ${ZSH_CUSTOM:=~/.oh-my-zs
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 
-# Configs for vim, zsh and xinitrc
-rm -f $HOME/.vimrc $HOME/.zshrc $HOME/.xinitrc && cp -f .vimrc .zshrc .xinitrc $HOME
-# Configs for i3, i3status and alacritty
-rm -rf $HOME/.config/i3 $HOME/.config/alacritty $HOME/.config/i3status && cp -rf .config $HOME
+#Latest mirrors
+sudo reflector --latest 10 --save /etc/pacman.d/mirrorlist
 
-# Make docker runable without sudo
-sudo groupadd docker
-sudo usermod -aG docker $USER
-newgrp docker 
-
-# Set up go path
-mkdir -p $HOME/go $HOME/go/bin $HOME/go/pkg $HOME/go/src
-
-# Install yay manually
+# Install yay
 git clone https://aur.archlinux.org/yay.git
 cd yay
 makepkg -si
 
-# Install aur packages
+# Get back
 cd ..
-yay -S - < resources/aur.list
 
-# Packages for laptop (may require to install additional wifi driver):
-#sudo pacman -S acpi xorg-xbacklight netctl ifplugd
+# Install packages
+yay -S - < pkgs.list
 
-# Microcode for Intel or AMD based CPU:
-#sudo pacman -S intel-ucode (amd-ucode)
-#grub-mkconfig -o /boot/grub/grub.cfg
+# Make docker runable without sudo
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
 
-# Free Intel based GPU packages:
-#sudo pacman -S xf86-video-intel mesa
+# Set up go path
+mkdir -p $HOME/go $HOME/go/bin $HOME/go/pkg $HOME/go/src
 
-# Free and Prop. Nvidia based GPU packages:
-#sudo pacman -S xf86-video-nouveau mesa
-#sudo pacman -S nvidia-dkms nvidia-utils (prop)
-
-# Optional packages only for self using purpose:
-#yay -S - < resources/optional.list
-
-# PERFORM REBOOT AFTER COMPLETE
+# Copy all rc
+rm -f $HOME/.vimrc $HOME/.zshrc && cp -f .vimrc .zshrc $HOME

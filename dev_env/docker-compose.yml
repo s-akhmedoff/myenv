@@ -1,19 +1,72 @@
 version: '3.8'
 
 services:
-
-  db:
-    container_name: postgres_db
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_volume:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: always
+    ports:
+      - 9090:9090
+    networks:
+      - default 
+  
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: nodeexporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: always
+    ports:
+      - 9100:9100
+    networks:
+      - default
+  
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    volumes:
+      - grafana_volume:/var/lib/grafana
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    env_file:
+      - grafana.env
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - default
+  
+  postgres:
+    container_name: postgresql
     image: postgres:alpine
     restart: always
     env_file:
-      - db.env
+      - postgres.env
     volumes:
-      - db_volume:/var/lib/postgresql/data/
+      - postgres_volume:/var/lib/postgresql/data/
     ports:
-      - "5432:5432"
+      - 5432:5432
     networks:
       - default
+
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
@@ -23,29 +76,60 @@ services:
     volumes: 
       - pgadmin_volume:/var/lib/pgadmin
     ports:
-      - "5050:80"
+      - 5050:80
     networks: 
       - default
-  rmq:
-    container_name: rmq
+
+  rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:3-management-alpine
     restart: always
     env_file: 
-      - rmq.env
+      - rabbitmq.env
     volumes: 
-      - rmq_volume:/var/lib/rabbitmq
+      - rabbitmq_volume:/var/lib/rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
     networks:
       - default
 
+  redis:
+    container_name: redis
+    image: redis:alpine
+    restart: always
+    env_file:
+      - redis.env
+    volumes:
+      - redis_volume:/var/lib/redis
+      - .:/usr/local/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    networks:
+      - default
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    restart: always
+    ports:
+      - 8081:8080
+    networks:
+      - default 
+
 volumes: 
-  db_volume:
+  prometheus_volume:
+  grafana_volume:
+  postgres_volume:
   pgadmin_volume:
-  rmq_volume:
+  rabbitmq_volume:
+  redis_volume:
 
 networks:
   default:
-    external: 
-      name: dev_env_net
