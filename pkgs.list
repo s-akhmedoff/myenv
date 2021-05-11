@@ -49,7 +49,6 @@ gnome-control-center
 gnome-disk-utility
 gnome-documents
 gnome-font-viewer
-gnome-getting-started-docs
 gnome-keyring
 gnome-logs
 gnome-maps
@@ -136,14 +135,10 @@ ttf-nerd-fonts-symbols
 ttf-roboto
 typora
 unrar
-valgrind
 vim
 vino
 which
 xdg-user-dirs-gtk
-xf86-video-intel
-yandex-music-player
 yay
 yelp
 zsh
-zsh-completions

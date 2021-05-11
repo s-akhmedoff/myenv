@@ -1,61 +1,139 @@
-# GUIDE
-## Installing process after booting in
-`` 1. loadkeys i386/qwerty/us.map.gz``
+# 													GUIDE
+## Installation
 
-`` 2. timedatectl set-ntp true ``
+1. Load US QWERTY key-map
 
-`` 3. gdisk /dev/sda ``
+```shell
+$ loadkeys i386/qwerty/us.map.gz
+```
 
-`` 4. cfdisk /dev/sda``
+2. Set Net Time
 
-| Part      |            |                       |         |
-| --------- | ---------- | --------------------- | ------- |
-| /dev/sda1 | EFI        | mkfs.fat -F32         | 350 MB  |
-| /dev/sda2 | Linux Root | mkfs.btrfs -f -L root | ~GB     |
-| /dev/sda3 | Linux Home | mkfs.btrfs -f -L home | ~GB     |
-| /dev/sda4 | SWAP       | mkswap && swapon      | $RAM GB |
+```shell
+$ timedatectl set-ntp true
+```
 
-`` 5. mkfs.fat -F32 /dev/sda1; \`` 
+3. Verify GPT
 
-​	``	mkfs.btrfs -f -L root /dev/sda2; \``
+```shell
+$ gdisk /dev/sda
+```
 
-​	`` mkfs.btrfs -f -L home /dev/sda3; \``
+4. Make Partitions on disk
 
-​	`` mkswap /dev/sda4 && swapon /dev/sda2 `` 
+```shell
+$ cfdisk /dev/sda
+```
 
-`` 6. mount /dev/sda2 /mnt && btrfs sub cr /mnt/@ && umount /dev/sda2; \`` 
+> Here is default partitions table
 
-​	``mount /dev/sda3 /mnt && btrfs sub cr /mnt/@home && umount /dev/sda3 ``
+| Partitions | Type       | File system | Size   |
+| ---------- | ---------- | ----------- | ------ |
+| /dev/sda1  | EFI        | fat         | 350 MB |
+| /dev/sda2  | Linux Root | btrfs       | 60 %   |
+| /dev/sda3  | Linux Home | btrfs       | 40 %   |
+| /dev/sda4  | SWAP       | swap        | 8 GB   |
 
-​		`` 6.1 mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/sda2 /mnt ``
+5. Make file systems
 
-​		`` 6.2 mkdir -p /mnt/home ``
+```shell
+$ mkfs.fat -F32 /dev/sda1 			# EFI
+$ mkfs.btrfs -f -L root /dev/sda2	# Linux Root
+$ mkfs.btrfs -f -L home /dev/sda3	# Linux Home
+$ mkswap /dev/sda4					# Swap
+```
 
-​		`` 6.3 mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@home /dev/sda3 /mnt/home ``
+6. Mount root and create sub volume
 
-`` 7. reflector --latest 10 --save /ect/pacman.d/mirrorlist``
+```shell
+$ mount /dev/sda2 /mnt && btrfs sub cr /mnt/@ && umount /dev/sda2
+```
 
-`` 8. pacstrap /mnt base base-devel linux-firmware linux-zen linux-zen-docs linux-zen-headers e2fsprogs dosfstools dhcpcd vim man-db man-pages tldr reflector fakeroot zsh grub os-prober mtools efibootmgr curl git btrfs-progs networkmanager grub-btrfs network-manager-applet dialog``
+7. Mount home and create sub volume
 
-`` 9. genfstab -U -p /mnt >> /mnt/etc/fstab ``
+```shell
+$ mount /dev/sda3 /mnt && btrfs sub cr /mnt/@home && umount /dev/sda3
+```
 
-`` 10. arch-chroot /mnt``
+8. Merge Mounts
 
-`` 11. ln -sf /usr/share/zoneinfo/Asia/Tashkent /etc/localtime``
+```shell
+$ mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@ /dev/sda2 /mnt
+$ mkdir -p /mnt/home
+$ mount -o noatime,commit=120,compress=zstd,space_cache=v2,discard=async,subvol=@home /dev/sda3 /mnt/home
+$ mkdir -p /mnt/boot/efi
+$ mount /dev/sda1 /mnt/boot/efi
+```
 
-`` 12. hwclock --systohc``
+9. Update Mirror list
 
-`` 13. vim /etc/locale.gen P.S uncomment en_US.UTF-8``
+```shell
+$ reflector --latest 10 --save /ect/pacman.d/mirrorlist
+```
 
-`` 14. locale-gen``
+10. Install in new root
 
-`` 15. echo "host-arch" > /etc/hostname``
+```shell
+$ pacstrap /mnt base base-devel linux-firmware linux-zen linux-zen-docs linux-zen-headers e2fsprogs dosfstools dhcpcd vim man-db man-pages tldr reflector fakeroot zsh grub os-prober mtools efibootmgr curl git btrfs-progs networkmanager dialog
+```
 
-`` 16. echo LANG=en_US.UTF-8 > /etc/locale.conf``
+11. Generate file system table
 
-`` 17. export LANG=en_US.UTF-8``
+```shell
+$ genfstab -U -p /mnt >> /mnt/etc/fstab
+```
 
-`` 18. vim /etc/hosts``
+12. Change root
+
+```shell
+$ arch-chroot /mnt
+```
+
+### Inside the chroot
+
+1. Local time
+
+```shell
+$ ln -sf /usr/share/zoneinfo/Asia/Tashkent /etc/localtime
+```
+
+2. Sync sys clock
+
+```shell
+$ hwclock --systohc
+```
+
+3. Uncomment en_US.UTF-8
+
+```shell
+$ vim /etc/locale.gen
+```
+
+4. Generate localization
+
+```shell
+$ locale-gen
+```
+
+5. Set host name
+
+```shell
+$ echo "host-arch" > /etc/hostname
+```
+
+6. Set Locale Language
+
+```shell
+$ echo LANG=en_US.UTF-8 > /etc/locale.conf
+```
+
+7. Set environment language
+
+```shell
+$ export LANG=en_US.UTF-8
+```
+
+8. Set hosts
 
 ```shell
 $ vim /etc/hosts
@@ -63,26 +141,108 @@ $ vim /etc/hosts
 ::1		localhost
 ```
 
-`` 19. passwd``
+9. Set root password
 
-`` 20. vim /etc/sudoers P.S uncomment %wheel``
+```shell
+$ passwd
+```
 
-​	`` 20.1 vim /etc/mkinitcpio.conf``
+10. Uncomment wheel group
 
-`` 21. useradd -m -G wheel -s /bin/zsh sada && passwd sada``
+```shell
+$ vim /etc/sudoers
+```
 
-`` 22. mkdir /boot/efi && mount /dev/sda1 /boot/efi``
+11. Add btrfs plug in
 
-`` 23. grub-install --target=x86_64-efi --bootloader-id=arch --recheck``
+```shell
+$ vim /etc/mkinitcpio.conf
+```
 
-`` 24. grub-mkconfig -o /boot/grub/grub.cfg ``
+12. Add user and set password
 
-`` 25. exit && umount -a && reboot`` 
+```shell
+$ useradd -m -G wheel -s /bin/zsh sada && passwd sada
+```
 
-## reboot system, log in, check internet connection, set up git configs, git clone by https and run ./install.sh
+13. Install grub
 
-1. sudo systemctl enable dhcpcd --now
-2. sudo systemctl enable networkmanager --now
-3. git config --global user.name "user@..."
-4. git config --global user.email "user.email@example.com"
-5. git clone https://github.com/s-akhmedoff/myenv.git
+```shell
+$ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=arch --recheck
+```
+
+14. Generate grub configuration
+
+```shell
+$ grub-mkconfig -o /boot/grub/grub.cfg
+```
+
+15. Exit from chroot
+
+```shell
+$ exit
+```
+
+End Install
+
+```shell
+$ umount -a && reboot
+```
+
+## Post installation 
+
+1. Enable dhcpcd
+
+```shell
+$ sudo systemctl enable dhcpcd --now
+```
+
+2. Enable Network Manager
+
+```shell
+$ sudo systemctl enable NetworkManager --now
+```
+
+3. Configure git
+
+```shell
+$ git config --global user.name "user@hostname"
+$ git config --global user.email "user.email@example.com"
+```
+
+4. Get this repository
+
+```shell
+$ git clone https://github.com/s-akhmedoff/myenv.git
+```
+
+5. Get into it
+
+```shell
+$ cd myenv
+```
+
+6. Install zsh
+
+```shell
+$ ./zsh.sh
+```
+
+7. Install yay
+
+```shell
+$ ./yay.sh
+```
+
+8. Install all packages
+
+```shell
+$ ./pkg.sh
+```
+
+9. Other set ups
+
+```shell
+$ ./other.sh
+```
+
