@@ -1,19 +1,20 @@
 # 													GUIDE
 ## Installation
 
-1. Load US QWERTY key-map
+* Verify the boot mode
 
 ```shell
-$ loadkeys i386/qwerty/us.map.gz
+$ ls /sys/firmware/efi/efivars
 ```
 
-2. Set Net Time
+
+* Set Net Time
 
 ```shell
 $ timedatectl set-ntp true
 ```
 
-3. Verify GPT
+* Verify GPT
 
 ```shell
 $ gdisk /dev/sda
@@ -29,9 +30,9 @@ $ cfdisk /dev/sda
 
 | Partitions | Type       | File system | Size   |
 | ---------- | ---------- | ----------- | ------ |
-| /dev/sda1  | EFI        | fat         | 350 MB |
-| /dev/sda2  | Linux Root | btrfs       | 60 %   |
-| /dev/sda3  | Linux Home | btrfs       | 40 %   |
+| /dev/sda1  | EFI        | fat         | 512 MB |
+| /dev/sda2  | Linux Root | btrfs       | 50 %   |
+| /dev/sda3  | Linux Home | btrfs       | 50 %   |
 | /dev/sda4  | SWAP       | swap        | 8 GB   |
 
 5. Make file systems
@@ -68,13 +69,45 @@ $ mount /dev/sda1 /mnt/boot/efi
 9. Update Mirror list
 
 ```shell
-$ reflector --latest 10 --save /ect/pacman.d/mirrorlist
+$ reflector --country 'Russia,Kazakhstan' --protocol http --protocol https --sort rate --latest 50 --save /ect/pacman.d/mirrorlist
+```
+
+* Add third party repo
+
+Antidote Repo
+
+```shell
+$ pacman-key --recv-key B545E9B7CD906FE3 
+$ pacman-key --lsign-key B545E9B7CD906FE3
+```
+
+
+``` shell
+$ vim /etc/pacman.conf
+[andontie-aur]
+Server = https://aur.andontie.net/$arch
+```
+
+Chaotic Repo
+
+```shell
+$ pacman-key --recv-key 3056513887B78AEB
+$ pacman-key --lsign-key 3056513887B78AEB
+$ pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-'{keyring,mirrorlist}'.pkg.tar.zst' 
+```
+
+
+``` shell
+$ vim /etc/pacman.conf
+[chaotic-aur]
+Include = /etc/pacman.d/chaotic-mirrorlist
 ```
 
 10. Install in new root
 
 ```shell
-$ pacstrap /mnt base base-devel linux-firmware linux-zen linux-zen-docs linux-zen-headers e2fsprogs dosfstools dhcpcd vim man-db man-pages tldr reflector fakeroot zsh grub os-prober mtools efibootmgr curl git btrfs-progs networkmanager dialog
+$ pacman -Syu
+$ pacstrap /mnt base base-devel linux-firmware linux-xanmod linux-xanmod-headers e2fsprogs dosfstools dhcpcd vim man-db openssh man-pages tldr reflector fakeroot zsh grub os-prober mtools efibootmgr curl git btrfs-progs networkmanager dialog
 ```
 
 11. Generate file system table
@@ -177,6 +210,18 @@ $ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=arc
 $ grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
+1. Enable dhcpcd
+
+```shell
+$ systemctl enable dhcpcd
+```
+
+2. Enable Network Manager
+
+```shell
+$ systemctl enable NetworkManager
+```
+
 15. Exit from chroot
 
 ```shell
@@ -191,17 +236,6 @@ $ umount -a && reboot
 
 ## Post installation 
 
-1. Enable dhcpcd
-
-```shell
-$ sudo systemctl enable dhcpcd --now
-```
-
-2. Enable Network Manager
-
-```shell
-$ sudo systemctl enable NetworkManager --now
-```
 
 3. Configure git
 
