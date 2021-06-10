@@ -17,3 +17,18 @@ scrape_configs:
     scrape_interval: 10s
     static_configs:
       - targets: ['localhost:9090']
+
+  - job_name: 'esb_health_check'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['esb_health_checker:3033']
+
+  - job_name: 'postgres_exporter'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['postgres_exporter:9187']
+
+  - job_name: 'rabbit_prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['rabbitmq:15692']

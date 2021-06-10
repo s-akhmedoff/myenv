@@ -1,7 +1,24 @@
 version: '3.8'
 
 services:
-  
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter
+    restart: always
+    environment:
+      - DATA_SOURCE_NAME=postgresql://db_admin:admin@postgresql:5432/postgres?sslmode=disable
+    networks:
+      - default
+
+  esb_health_checker:
+    image: esb_health_checker:latest
+    container_name: esb_health_checker
+    restart: always
+    ports:
+      - 3033:3033
+    networks:
+      - default
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus

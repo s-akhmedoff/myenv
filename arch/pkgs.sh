@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Latest mirrors
-sudo reflector --latest 15 --protocol http,https --save /etc/pacman.d/mirrorlist
+sudo reflector --country 'Russia,Kazakhstan' --protocol 'http,https' --latest 50 --sort rate --save /etc/pacman.d/mirrorlist
 
 # Update packages list
 yay -Syu
