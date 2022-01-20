@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   postgres-exporter:
@@ -7,15 +7,6 @@ services:
     restart: always
     environment:
       - DATA_SOURCE_NAME=postgresql://db_admin:admin@postgresql:5432/postgres?sslmode=disable
-    networks:
-      - default
-
-  esb_health_checker:
-    image: esb_health_checker:latest
-    container_name: esb_health_checker
-    restart: always
-    ports:
-      - 3033:3033
     networks:
       - default
 
@@ -119,7 +110,7 @@ services:
       - redis.env
     volumes:
       - redis_volume:/var/lib/redis
-      - .:/usr/local/etc/redis/redis.conf
+      - redis_data:/data
     ports:
       - 6379:6379
     networks:
@@ -134,11 +125,45 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
     restart: always
     ports:
       - 8081:8080
     networks:
       - default 
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    env_file:
+      - mysql.env
+    volumes:
+      - mysql:/var/lib/mysql
+    ulimits:
+      nofile:
+        soft: 20000
+        hard: 40000
+    ports:
+      - 3306:3306
+    networks:
+      - default
+
+  phpmyadmin:
+    links:
+      - mysql
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - 8010:80
+    volumes:
+      - phpmyadmin:/var/lib
+    env_file:
+      - phpmyadmin.env
+    restart: always
+    networks:
+      - default  
 
 volumes: 
   prometheus_volume:
@@ -147,6 +172,10 @@ volumes:
   pgadmin_volume:
   rabbitmq_volume:
   redis_volume:
+  redis_data:
+  phpmyadmin:
+  mysql:
 
 networks:
   default:
+    name: dev_env_net
