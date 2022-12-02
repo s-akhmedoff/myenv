@@ -1,6 +1,21 @@
 version: '3.9'
 
 services:
+  jaeger:
+    container_name: jaeger
+    restart: always
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+    volumes:
+      - jaeger_volume:/tmp
+    environment:
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090  
+    networks:
+      - default
+
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
@@ -105,6 +120,7 @@ services:
     container_name: rabbitmq
     image: rabbitmq:3-management-alpine
     restart: always
+    hostname: dev
     env_file: 
       - rabbitmq.env
     volumes: 
@@ -147,7 +163,9 @@ services:
     networks:
       - default 
 
-volumes: 
+volumes:
+  jaeger_volume:
+  portainer_volume:
   prometheus_volume:
   grafana_volume:
   postgres_volume:
