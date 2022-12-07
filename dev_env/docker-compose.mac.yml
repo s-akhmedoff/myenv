@@ -8,6 +8,7 @@ services:
     ports:
       - "6831:6831/udp"
       - "16686:16686"
+      - "14268:14268"
     volumes:
       - jaeger_volume:/tmp
     environment:
@@ -15,11 +16,11 @@ services:
       - PROMETHEUS_SERVER_URL=http://prometheus:9090  
     networks:
       - default
-
+      
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
-    restart: always
+    restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     volumes:
@@ -42,14 +43,14 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./prometheus:/etc/prometheus
+      - ./prometheus_mac:/etc/prometheus
       - prometheus_volume:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
+      - '--storage.tsdb.retention.time=100h'
       - '--web.enable-lifecycle'
     restart: always
     ports:
@@ -57,31 +58,13 @@ services:
     networks:
       - default 
   
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: nodeexporter
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
-    restart: always
-    ports:
-      - 9100:9100
-    networks:
-      - default
-  
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     volumes:
       - grafana_volume:/var/lib/grafana
-      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:rw
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:rw
     env_file:
       - grafana.env
     restart: always
@@ -103,28 +86,16 @@ services:
     networks:
       - default
 
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    restart: always
-    env_file: 
-      - pgadmin.env
-    volumes: 
-      - pgadmin_volume:/var/lib/pgadmin
-    ports:
-      - 5050:80
-    networks: 
-      - default
-
   rabbitmq:
     container_name: rabbitmq
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3.9-management-alpine
     restart: always
     hostname: dev
     env_file: 
       - rabbitmq.env
     volumes: 
-      - rabbitmq_volume:/var/lib/rabbitmq
+      - rabbitmq_volume:/var/lib/rabbitmq/
+      - rabbitmq_etc:/etc/rabbitmq/
     ports:
       - 5672:5672
       - 15672:15672
@@ -145,36 +116,17 @@ services:
     networks:
       - default
 
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:rw
-      - /sys:/sys:ro
-      - /var/lib/docker:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    privileged: true
-    devices:
-      - /dev/kmsg:/dev/kmsg
-    restart: always
-    ports:
-      - 8081:8080
-    networks:
-      - default 
-
-volumes:
+volumes: 
   jaeger_volume:
   portainer_volume:
   prometheus_volume:
   grafana_volume:
   postgres_volume:
-  pgadmin_volume:
   rabbitmq_volume:
+  rabbitmq_etc:
   redis_volume:
   redis_data:
 
 networks:
   default:
     name: dev_env
-   

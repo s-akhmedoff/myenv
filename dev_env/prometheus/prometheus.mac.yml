@@ -26,4 +26,9 @@ scrape_configs:
   - job_name: 'income_service'
     scrape_interval: 1s
     static_configs:
-      - targets: ['host.docker.internal:7001']
+      - targets: ['host.docker.internal:7002']
+
+  - job_name: 'credcard_ucs_terrorism'
+    scrape_interval: 1s
+    static_configs:
+      - targets: ['host.docker.internal:7004']      
