@@ -154,6 +154,7 @@ services:
     container_name: redis
     image: redis:alpine
     restart: always
+    hostname: dev
     env_file:
       - envs/redis.env
     volumes:
